@@ -8,42 +8,31 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
+type HttpServer struct {
+	Address string
+}
 type Config struct {
 	Env          string
 	Storage_path string
 	Http_server  HttpServer
 }
 
-type HttpServer struct {
-	Address string
-}
-
-func LoadAndSerializeConfig() *Config {
-	var configPath string
-	configPath = os.Getenv("CFG_PATH")
-
-	if configPath == "" {
+func LoadConfigAndSerialize() *Config{
+	var configFilePath string = "config.yaml"
+	_, err := os.Stat(configFilePath)
+	if err != nil {
 		flags := flag.String("config", "", "for setting config file path")
 		flag.Parse()
-
-		configPath = *flags
-
-		if configPath == "" {
-			log.Fatal("Config path not set")
-		}
+		configFilePath = *flags
+	}
+	if configFilePath == "" {
+		log.Fatal("Config path not set")
 	}
 
-	_, err := os.Stat(configPath)
+	var cnf Config
+	err = cleanenv.ReadConfig(configFilePath, &cnf)
 	if err != nil {
-		log.Fatalf("Config file not found at config path: %s", configPath)
+		log.Fatal("Error", err.Error())
 	}
-
-	var cfg Config
-	e := cleanenv.ReadConfig(configPath, &cfg)
-	if e != nil {
-		log.Fatalf("Failed to read config: %s", e.Error())
-	}
-
-	SerializedConfig := &cfg
-	return SerializedConfig
+	return &cnf
 }
