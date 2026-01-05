@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/2kChinmay/students-api/internal/config"
+	student "github.com/2kChinmay/students-api/internal/http/handlers"
 )
 
 func main() {
@@ -21,9 +22,7 @@ func main() {
 
 	//ROUTER SETUP:
 	router := http.NewServeMux()
-	router.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello, Students API!"))
-	})
+	router.HandleFunc("POST /api/students", student.New())
 
 	//SERVER SETUP:
 	server := &http.Server{
@@ -31,7 +30,7 @@ func main() {
 		Handler: router,
 	}
 
-	slog.Info("Server started successfully", slog.String("address", configuration.Http_server.Address))
+	slog.Info("Server started successfully", slog.String("address", `http://`+configuration.Http_server.Address))
 
 	//Main function runs in a separate go routine and it can stop if any error occurs. To restrict it from stopping make a channel as follows:-
 	channel := make(chan os.Signal, 1)
